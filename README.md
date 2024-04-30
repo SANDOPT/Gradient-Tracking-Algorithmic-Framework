@@ -6,4 +6,4 @@ The repository contains additional numerical results and python implementation f
 
 [2] Berahas, Albert S., Raghu Bollapragada, and Shagun Gupta. "A Flexible Gradient Tracking Algorithmic Framework for Decentralized Optimization." arXiv preprint [arXiv:2312.06814](http://arxiv.org/abs/2312.06814) (2023).
 
-
+Code to generate results for Qudartic problem and logistic regression experiments for the deterministic framework GTA and randomized frameowrk RGTA can be found in their respective repositories. 

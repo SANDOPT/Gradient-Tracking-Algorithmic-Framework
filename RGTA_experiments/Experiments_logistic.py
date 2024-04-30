@@ -12,8 +12,9 @@ import Algorithms
 
 n = 16  # number of nodes
 n_c = 5  # number of communication steps
-n_g = 5  # number of computation steps
+p = 0.1  #  probability of computation steps
 iterations = int(1e4)  # number of iterations
+seed = 10  # seed for algorithm
 
 """Decentralized Graphs"""
 # W = Graphs.W_full(n)
@@ -42,81 +43,86 @@ while norm > 1e-10:
     )
     norm = np.linalg.norm(g)
 
-"""Uncomment to run GTA algorithms"""
+"""Uncomment to run RGTA algorithms"""
 # The step size (alpha) must be changed according to the problem and graph selected
-"""Uncomment for GTA1"""
-# opt_error, con_error = Algorithms.GTA1(
+"""Uncomment for RGTA1"""
+# opt_error, con_error = Algorithms.RGTA1(
 #     x_0=x_init,
 #     W=W,
 #     alpha=1e-3,
 #     iterations=iterations,
 #     grad_full=grad_full,
-#     n_g=n_g,
+#     p = p,
 #     n_c=n_c,
 #     x_opt=x_opt,
+#     seed=seed,
 # )
-# name = f"GTA-1({n_c}, {n_g})"
-"""Uncomment for GTA2"""
-# opt_error, con_error = Algorithms.GTA2(
+# name = f"RGTA-1({n_c}, {p})"
+"""Uncomment for RGTA2"""
+# opt_error, con_error = Algorithms.RGTA2(
 #     x_0=x_init,
 #     W=W,
-#     alpha=1e-2,
+#     alpha=1e-3,
 #     iterations=iterations,
 #     grad_full=grad_full,
-#     n_g=n_g,
+#     p = p,
 #     n_c=n_c,
 #     x_opt=x_opt,
+#     seed=seed,
 # )
-# name = f"GTA-2({n_c}, {n_g})"
-"""Uncomment for GTA3"""
-opt_error, con_error = Algorithms.GTA3(
+# name = f"RGTA-2({n_c}, {p})"
+"""Uncomment for RGTA3"""
+opt_error, con_error = Algorithms.RGTA3(
     x_0=x_init,
     W=W,
-    alpha=1e-1,
+    alpha=1e-3,
     iterations=iterations,
     grad_full=grad_full,
-    n_g=n_g,
+    p=p,
     n_c=n_c,
     x_opt=x_opt,
+    seed=seed,
 )
-name = f"GTA-3({n_c}, {n_g})"
+name = f"RGTA-3({n_c}, {p})"
 
 """Plotting code"""
-fig, ax = plt.subplots(2, 3, figsize=(15, 7))
+fig, ax = plt.subplots(2, 2, figsize=(15, 7))
 fig.suptitle(problem_name)
 ax[0, 0].set_ylabel("Optimization Error")
 ax[1, 0].set_ylabel("Consensus Error")
 
 ax[0, 0].set_yscale("log")
 ax[0, 1].set_yscale("log")
-ax[0, 2].set_yscale("log")
 ax[1, 0].set_yscale("log")
 ax[1, 1].set_yscale("log")
-ax[1, 2].set_yscale("log")
 
 ax[0, 0].grid(True)
 ax[0, 1].grid(True)
-ax[0, 2].grid(True)
 ax[1, 0].grid(True)
 ax[1, 1].grid(True)
-ax[1, 2].grid(True)
 
-ax[0, 0].set_xlabel("Iterations")
-ax[1, 0].set_xlabel("Iterations")
-ax[0, 1].set_xlabel("Communications")
-ax[1, 1].set_xlabel("Communications")
-ax[0, 2].set_xlabel("Computations")
-ax[1, 2].set_xlabel("Computations")
+ax[0, 0].set_xlabel("Communications")
+ax[1, 0].set_xlabel("Communications")
+ax[0, 1].set_xlabel("Computations")
+ax[1, 1].set_xlabel("Computations")
 
-ax[0, 0].plot(np.arange(iterations), opt_error, label=name)
-ax[0, 1].plot(n_c * np.arange(iterations), opt_error)
-ax[0, 2].plot(n_g * np.arange(iterations), opt_error)
-ax[1, 0].plot(np.arange(iterations), con_error)
-ax[1, 1].plot(n_c * np.arange(iterations), con_error)
-ax[1, 2].plot(n_g * np.arange(iterations), con_error)
+# Generate sequence for communication steps
+rng = np.random.default_rng(seed=seed)
+comms_seq = np.zeros(iterations)
+t_comms = 0
+for i in range(iterations):
+    if rng.uniform() <= p:
+        t_comms += 1
+    comms_seq[i] = t_comms
+comms_seq = n_c * comms_seq
+
+ax[0, 0].plot(comms_seq, opt_error, label=name)
+ax[0, 1].plot(np.arange(iterations), opt_error)
+ax[1, 0].plot(comms_seq, con_error)
+ax[1, 1].plot(np.arange(iterations), con_error)
 
 lines_labels = [ax1.get_legend_handles_labels() for ax1 in fig.axes]
 lines, labels = [sum(lol, []) for lol in zip(*lines_labels)]
 fig.legend(lines, labels, loc="center", bbox_to_anchor=(0.5, -0.01), ncol=6)
 fig.tight_layout()
-fig.savefig(f"GTA_experiment_{problem_name}.pdf", bbox_inches="tight")
+fig.savefig(f"RGTA_experiment_{problem_name}.pdf", bbox_inches="tight")
